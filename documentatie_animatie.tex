@@ -1,0 +1,276 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[a4paper,margin=0.5in]{geometry}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{float}
+
+\definecolor{codegray}{rgb}{0.9,0.9,0.9}
+\definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{listingbg}{rgb}{0.95,0.95,0.95}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{listingbg},   
+    commentstyle=\itshape\color{darkblue},
+    keywordstyle=\bfseries\color{blue},
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{red!80!black},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    frame=tb, % Adaugă un cadru sus și jos la listing
+    captionpos=b % Poziția caption-ului sub listing
+}
+\lstset{style=mystyle} % Setează stilul global
+
+% O cutie personalizată pentru definiții sau secțiuni importante
+\newtcolorbox{definitionbox}[1]{
+    colback=blue!5!white, % Culoare de fundal
+    colframe=blue!60!black, % Culoare cadru
+    fonttitle=\bfseries,
+    title=#1,
+    sharp corners,
+    boxrule=1pt % Grosimea liniei cadrului
+}
+
+\title{\Huge Animația unei Cuadrice Dublu Riglate}
+\author{Cocu Matei-Iulian și Lăutaru Bianca-Maria}
+\date{\today} % Adaugă data curentă
+
+\begin{document}
+
+\maketitle
+\begin{center}
+    \textit{Documentație pentru generarea și vizualizarea unui hiperboloid cu o pânză}
+\end{center}
+\vspace{1cm}
+
+\tableofcontents
+\newpage
+
+\section{Introducere}
+Acest document descrie procesul de generare a unei animații tridimensionale pentru o cuadrică dublu riglată, specific un hiperboloid cu o pânză, utilizând limbajul de programare Python și biblioteca Matplotlib. Scopul este de a vizualiza cele două familii de drepte (generatoare) care compun suprafața cuadricei și de a observa structura acesteia în timpul rotației. Codul Python implementează calculul parametric al acestor drepte și orchestrarea animației.
+
+\section{Cuadrice Dublu Riglate - Aspecte Teoretice}
+
+\begin{definitionbox}{Definiție}
+O \textbf{suprafață riglată} este o suprafață generată prin mișcarea unei drepte în spațiu. Această dreaptă mobilă se numește \textbf{generatoare} a suprafeței.
+O \textbf{cuadrică dublu riglată} este o suprafață cuadrică (definită de o ecuație de gradul al doilea) care conține nu una, ci \textit{două} familii distincte de generatoare. Prin fiecare punct al unei astfel de suprafețe trec exact două drepte distincte care sunt în întregime conținute în suprafață, câte una din fiecare familie.
+\end{definitionbox}
+
+Principalele tipuri de cuadrice dublu riglate sunt:
+\begin{itemize}
+    \item \textbf{Hiperboloidul cu o pânză:} Este suprafața cuadrică definită canonic de ecuația:
+    \[ \frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1 \]
+    Aceasta este cuadrica implementată în codul Python furnizat.
+    \item \textbf{Paraboloidul hiperbolic:} Definit canonic de ecuația:
+    \[ \frac{x^2}{a^2} - \frac{y^2}{b^2} = 2z \]
+\end{itemize}
+
+\subsection{Generatoarele Hiperboloidului cu o Pânză}
+Pentru hiperboloidul cu o pânză $\frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac{z^2}{c^2} = 1$, cele două familii de generatoare pot fi descrise parametric. Un sistem de ecuații parametrice pentru aceste drepte este:
+
+\textbf{Familia 1 ($\lambda$-const):}
+\[
+\begin{cases}
+\frac{x}{a} - \frac{z}{c} = \lambda \left(1 - \frac{y}{b}\right) \\
+\frac{x}{a} + \frac{z}{c} = \frac{1}{\lambda} \left(1 + \frac{y}{b}\right)
+\end{cases}
+\]
+unde $\lambda$ este un parametru real.
+
+O parametrizare mai directă, utilizată și în cod, pentru un punct $(x,y,z)$ de pe o generatoare în funcție de un parametru unghiular $\alpha$ (care identifică dreapta în familie) și un parametru $s$ (care definește poziția pe dreaptă, similar cu $z$) este:
+\begin{itemize}
+    \item \textbf{Familia 1 de generatoare:}
+    \begin{align*}
+    x(s, \alpha) &= a \left(\cos(\alpha) - \frac{s}{c_{eq}} \sin(\alpha)\right) \\
+    y(s, \alpha) &= b \left(\sin(\alpha) + \frac{s}{c_{eq}} \cos(\alpha)\right) \\
+    z(s, \alpha) &= s
+    \end{align*}
+    \item \textbf{Familia 2 de generatoare:}
+    \begin{align*}
+    x(s, \alpha) &= a \left(\cos(\alpha) + \frac{s}{c_{eq}} \sin(\alpha)\right) \\
+    y(s, \alpha) &= b \left(\sin(\alpha) - \frac{s}{c_{eq}} \cos(\alpha)\right) \\
+    z(s, \alpha) &= s
+    \end{align*}
+\end{itemize}
+Aici, $c_{eq}$ corespunde parametrului $c$ din ecuația canonică a hiperboloidului. Aceste ecuații sunt implementate direct în scriptul Python pentru a genera punctele de pe fiecare linie.
+
+\section{Descrierea Implementării Python}
+Scriptul Python utilizează bibliotecile `numpy` pentru calcule numerice și `matplotlib` (cu `mplot3d` și `FuncAnimation`) pentru crearea graficelor 3D și a animației.
+
+\subsection{Parametrii Scriptului}
+Scriptul începe prin definirea unor parametri cheie:
+\begin{itemize}
+    \item \texttt{a, b}: Semiaxele elipsei de la $z=0$ a hiperboloidului.
+    \item \texttt{c\_eq}: Parametru ce controlează curbura hiperboloidului și, implicit, înclinația generatoarelor. O valoare mai mică accentuează "gâtul" hiperboloidului.
+    \item \texttt{z\_max}: Definește lungimea (sau intervalul pe axa $z$) pentru care sunt desenate segmentele de dreaptă.
+    \item \texttt{num\_lines}: Numărul de drepte (generatoare) desenate pentru fiecare dintre cele două familii.
+    \item \texttt{num\_points\_per\_line}: Numărul de puncte calculate pentru a desena fiecare segment de dreaptă, determinând rezoluția acestora.
+    \item \texttt{num\_frames}: Numărul total de cadre (imagini individuale) din care va fi compusă animația finală.
+    \item \texttt{fps}: Cadre pe secundă (frames per second), determinând viteza animației.
+    \item \texttt{initial\_elevation}: Unghiul de elevație (în grade) al camerei virtuale pentru vizualizarea 3D.
+    \item \texttt{output\_filename\_gif}: Numele fișierului GIF în care va fi salvată animația.
+\end{itemize}
+
+\subsection{Configurarea Scenei 3D}
+O figură și un subplot 3D sunt create folosind `matplotlib`. Fundalul figurii și al zonei de desenare a axelor este setat explicit pe alb.
+\begin{lstlisting}[language=Python, firstnumber=16, caption=Configurarea figurii și axelor]
+fig = plt.figure(figsize=(9, 8))
+ax = fig.add_subplot(111, projection='3d')
+fig.patch.set_facecolor('white') 
+ax.set_facecolor('white') 
+\end{lstlisting}
+
+\subsection{Generarea Liniilor Riglate}
+Se definesc vectorii \texttt{s\_values} (coordonatele $z$ de-a lungul unei drepte) și \texttt{alpha\_values} (parametrii unghiulari pentru distribuirea dreptelor în jurul axei $z$).
+Apoi, pentru fiecare familie de linii:
+\begin{itemize}
+    \item Se iterează prin valorile \texttt{alpha}.
+    \item Pentru fiecare \texttt{alpha}, se calculează coordonatele $(x, y, z)$ ale punctelor de pe acea dreaptă folosind ecuațiile parametrice menționate anterior.
+    \item Datele fiecărei linii (coordonate, culoare, grosime) sunt stocate într-o listă \texttt{lines\_data}. Familia 1 este colorată în albastru, iar familia 2 în roșu.
+\end{itemize}
+\begin{lstlisting}[language=Python, firstnumber=26, caption=Generarea datelor pentru o familie de linii]
+# familia 1
+for alpha in alpha_values:
+    x_line1 = a * (np.cos(alpha) - (s_values / c_eq) * np.sin(alpha))
+    y_line1 = b * (np.sin(alpha) + (s_values / c_eq) * np.cos(alpha))
+    z_line1 = s_values
+    lines_data.append({'x': x_line1, 'y': y_line1, 'z': z_line1, 'color': 'blue', 'linewidth': 1.2})
+\end{lstlisting}
+
+\subsection{Funcția de Animație \texttt{update\_frame}}
+Această funcție este esențială și este apelată pentru fiecare cadru al animației:
+\begin{enumerate}
+    \item \texttt{ax.clear()}: Șterge conținutul axelor din cadrul anterior.
+    \item \texttt{ax.set\_facecolor('white')}: Reaplică fundalul alb al axelor, deoarece \texttt{clear()} poate reseta unele proprietăți.
+    \item \textbf{Redesenarea Liniilor}: Iterează prin \texttt{lines\_data} și desenează fiecare linie cu proprietățile stocate.
+    \item \textbf{Configurarea Axelor}: 
+        \begin{itemize}
+            \item \texttt{ax.set\_xticks([]), ax.set\_yticks([]), ax.set\_zticks([])}: Elimină gradațiile numerice de pe axe.
+            \item \texttt{ax.set\_xlabel(""), ax.set\_ylabel(""), ax.set\_zlabel("")}: Elimină etichetele axelor ("X-axis", etc.).
+            \item \texttt{ax.set\_title("Cuadrică dublu-riglată")}: Setează un titlu pentru grafic.
+        \end{itemize}
+    \item \textbf{Setarea Limitelor Axelor}: Limitele axelor $(x, y, z)$ sunt calculate și setate explicit. Acest pas este crucial pentru a menține o vizualizare consistentă și a preveni redimensionarea automată a scenei între cadre, ceea ce ar putea duce la o animație "săltăreață".
+    \item \textbf{Rotirea Vederii}: \texttt{ax.view\_init(elev=initial\_elevation, azim=azimuth\_angle\_deg)} actualizează unghiul de azimut al camerei, creând efectul de rotație a obiectului în jurul axei verticale.
+\end{enumerate}
+
+\subsection{Crearea și Salvarea Animației}
+\begin{itemize}
+    \item \texttt{FuncAnimation}: Această clasă din Matplotlib este utilizată pentru a crea obiectul de animație, apelând repetitiv funcția \texttt{update\_frame} pentru fiecare cadru. Intervalul dintre cadre este determinat de \texttt{fps}.
+    \item \texttt{PillowWriter}: Animația este salvată într-un fișier GIF folosind \texttt{PillowWriter} din biblioteca Pillow (o dependență a Matplotlib pentru scrierea GIF-urilor).
+\end{itemize}
+
+\section{Codul Sursă Python Complet}
+\begin{lstlisting}[language=Python, caption=Script Python pentru animația cuadricei dublu riglate, label=lst:python_code]
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.animation import FuncAnimation, PillowWriter
+
+# --- parametrii hiperboloidului ---
+a = 2.0          # semiaxa asociata x pentru elipsa din z=0
+b = 1.5          # semiaxa asociata y pentru elipsa din z=0
+c_eq = 2.0       # parametrul 'c' din x^2/a^2 + y^2/b^2 - z^2/c_eq^2 = 1
+                 # Smaller c_eq -> more pronounced waist/skew.
+                 # micsorarea parametrului c_eq modifica inclinatia dreptelor
+
+z_max = 3.0      # lungimea unei drepte
+num_lines = 20   # numarul de drepte dintr-o familie
+num_points_per_line = 50 # arbitrar, numarul de puncte de pe o dreapta
+
+# --- parametrii animatiei ---
+num_frames = 360         # numarul total de frame-uri pentru o rotatie completa
+fps = 60                 # cadre pe secunda
+initial_elevation = 25   # unghiul de elevatie
+output_filename_gif = "animatie_cuadrica_dubluriglata.gif"
+
+# --- setup axe 3D ---
+fig = plt.figure(figsize=(9, 8)) # ajustare marime
+ax = fig.add_subplot(111, projection='3d')
+fig.patch.set_facecolor('white') # fundal alb
+ax.set_facecolor('white') # axe de reprezentare albe
+
+# --- generarea datelor despre linii ---
+s_values = np.linspace(-z_max, z_max, num_points_per_line)
+alpha_values = np.linspace(0, 2 * np.pi, num_lines, endpoint=False)
+
+lines_data = []
+
+# familia 1
+for alpha in alpha_values:
+    x_line1 = a * (np.cos(alpha) - (s_values / c_eq) * np.sin(alpha))
+    y_line1 = b * (np.sin(alpha) + (s_values / c_eq) * np.cos(alpha))
+    z_line1 = s_values
+    lines_data.append({'x': x_line1, 'y': y_line1, 'z': z_line1, 'color': 'blue', 'linewidth': 1.2})
+
+# familia 2
+for alpha in alpha_values:
+    x_line2 = a * (np.cos(alpha) + (s_values / c_eq) * np.sin(alpha))
+    y_line2 = b * (np.sin(alpha) - (s_values / c_eq) * np.cos(alpha))
+    z_line2 = s_values
+    lines_data.append({'x': x_line2, 'y': y_line2, 'z': z_line2, 'color': 'red', 'linewidth': 1.2})
+
+# --- functia de animare ---
+
+def update_frame(frame_number): # functia de desenare a unui singur cadru
+    ax.clear() # reimprospatarea cadrului
+    ax.set_facecolor('white') # reaplicarea fundalului alb
+
+    for line_props in lines_data: # improspatarea pozitiilor liniilor
+        ax.plot(line_props['x'], line_props['y'], line_props['z'],
+                color=line_props['color'], linewidth=line_props['linewidth'])
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_zticks([])
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.set_zlabel("")
+    ax.set_title("")
+    ax.grid(False)
+    ax.set_title("Cuadrica dublu-riglata")
+
+    # extinderea maxima a liniilor pana la  s = z_max
+    # pentru x: a * (cos(alpha) - (z_max/c_eq) * sin(alpha)). valoarea maxima este: a * sqrt(1 + (z_max/c_eq)^2)
+    max_coord_factor = np.sqrt(1 + (z_max/c_eq)**2)
+    axis_limit_x = a * max_coord_factor * 1.1
+    axis_limit_y = b * max_coord_factor * 1.1
+    axis_limit_z = z_max * 1.1
+
+    ax.set_xlim([-axis_limit_x, axis_limit_x])
+    ax.set_ylim([-axis_limit_y, axis_limit_y])
+    ax.set_zlim([-axis_limit_z, axis_limit_z])
+    ax.grid(True) # This will make the grid visible
+
+    azimuth_angle_deg = frame_number * (360 / num_frames)
+    ax.view_init(elev=initial_elevation, azim=azimuth_angle_deg)
+
+    return fig,
+
+print("generarea cadrelor animatiei")
+animation = FuncAnimation(fig, update_frame, frames=num_frames,
+                          interval=(1000 / fps), blit=False)
+
+try:
+    print(f"salvarea animatiei ca: {output_filename_gif}")
+    writer = PillowWriter(fps=fps)
+    animation.save(output_filename_gif, writer=writer)
+    print(f"animatie salvata ca: {output_filename_gif}")
+except Exception as e:
+    print(f"eroare salvare: {e}")
+
+print("script terminat")
+\end{lstlisting}
+
+\section{Concluzii}
+Scriptul Python prezentat generează o animație a unui hiperboloid cu o pânză, ilustrând clar cele două familii de generatoare care formează suprafața sa. Prin ajustarea parametrilor, se pot explora diverse forme și configurații ale acestei cuadrice dublu riglate.
+
+\end{document}

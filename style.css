@@ -1,0 +1,64 @@
+:root {
+    --num-lines-per-family: 20;
+    --hyperboloid-radius: 80px;
+    --line-height: 280px;
+    --skew-angle: 35deg;
+    --animation-duration: 24s;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #111;
+    overflow: hidden;
+    font-family: sans-serif;
+    color: #eee;
+}
+
+.scene-container {
+    width: 400px;
+    height: 400px;
+    perspective: 1000px;
+    position: relative;
+}
+
+
+.hyperboloid {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    transform: rotateX(15deg) rotateZ(0deg);
+    animation: spinHyperboloid var(--animation-duration) linear infinite;
+}
+
+@keyframes spinHyperboloid {
+    from { transform: rotateX(15deg) rotateZ(0deg) rotateY(0deg); }
+    to { transform: rotateX(15deg) rotateZ(0deg) rotateY(360deg); }
+}
+
+.line {
+    position: absolute;
+    width: 2px;
+    background-color: aqua;
+    transform-origin: center center;
+}
+
+.info {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0,0,0,0.7);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+.info p { margin: 5px 0; }
+
+.hyperboloid-panel {
+    position: absolute;
+    transform-origin: center center;
+}
